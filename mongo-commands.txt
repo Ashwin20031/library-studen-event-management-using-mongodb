@@ -1,0 +1,113 @@
+
+test> show dbs
+admin        40.00 KiB
+config       96.00 KiB
+learn        40.00 KiB
+local        40.00 KiB
+restaurant  128.00 KiB
+test> use library
+switched to db library
+library> db.createCollection(
+... "book");
+{ ok: 1 }
+library> db.book.insert({title:"the war",author:"James Flex",availability_status:true});
+DeprecationWarning: Collection.insert() is deprecated. Use insertOne, insertMany, or bulkWrite.
+{
+  acknowledged: true,
+  insertedIds: { '0': ObjectId('66c3235265095c50532710bc') }
+}
+library> db.book.insertMany([{title:"the war 2",author:"James Flex",availability_status:false},{title:"the judo",author:"kim juo",availability_status:true},{title:"One Piece",author:"Oda",availability_status:true}]);
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('66c3240d65095c50532710bd'),
+    '1': ObjectId('66c3240d65095c50532710be'),
+    '2': ObjectId('66c3240d65095c50532710bf')
+  }
+}
+library> db.library.find();
+
+library> db.book.find();
+[
+  {
+    _id: ObjectId('66c3235265095c50532710bc'),
+    title: 'the war',
+    author: 'James Flex',
+    availability_status: true
+  },
+  {
+    _id: ObjectId('66c3240d65095c50532710bd'),
+    title: 'the war 2',
+    author: 'James Flex',
+    availability_status: false
+  },
+  {
+    _id: ObjectId('66c3240d65095c50532710be'),
+    title: 'the judo',
+    author: 'kim juo',
+    availability_status: true
+  },
+  {
+    _id: ObjectId('66c3240d65095c50532710bf'),
+    title: 'One Piece',
+    author: 'Oda',
+    availability_status: true
+  }
+]
+library> db.book.findOne({author:"Oda"});
+{
+  _id: ObjectId('66c3240d65095c50532710bf'),
+  title: 'One Piece',
+  author: 'Oda',
+  availability_status: true
+}
+library> db.book.updateOne({title:"One Piece"},{$set:{author:"E. Oda"}});
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+library> db.book.deleteOne({title:"the judo"});
+{ acknowledged: true, deletedCount: 1 }
+
+
+library> db.book.aggregate([{ $group: { _id: "author"}},{$count:"author"}]);
+[ { author: 1 } ]
+
+use student;
+db.students.insertMany([{ "student_id": 1, "name": "Ashwin", "age": 20, "gender": "male", "department": "Computer Science", "marks": { "math": 85, "english": 78, "physics": 90 }, "enrollment_date": new Date("2022-08-20"), "graduated": false }, { "student_id": 2, "name": "Bala", "age": 22, "gender": "Male", "department": "Electrical Engineering", "marks": { "math": 92, "english": 80, "physics": 87 }, "enrollment_date": new Date("2021-08-20"), "graduated": true }, { "student_id": 3, "name": "karikalan", "age": 21, "gender": "Male", "department": "Mechanical Engineering", "marks": { "math": 79, "english": 85, "physics": 82 }, "enrollment_date": new Date("2023-01-15"), "graduated": false }]);
+
+
+db.students.aggregate([{$group:{_id:null,averageMath:{$avg:"$marks.math"},averageEnglish:{$avg:"$marks.english"},averagePhysics:{$avg:"$marks.physics"}}}]);
+
+[
+  {
+    _id: null,
+    averageMath: 85.33333333333333,
+    averageEnglish: 81,
+    averagePhysics: 86.33333333333333
+  }
+]
+
+
+db.students.aggregate([{ $group: { _id: "$department", studentCount: { $sum: 1 } } }]);
+[
+  { _id: 'Electrical Engineering', studentCount: 1 },
+  { _id: 'Mechanical Engineering', studentCount: 1 },
+  { _id: 'Computer Science', studentCount: 1 }
+]
+
+
+student> db.students.aggregate([{ $group: { _id: null, maxMath: { $max: "$marks.math" }, maxEnglish: { $max: "$marks.english" }, maxPhysics: { $max: "$marks.physics" } } }]);
+[ { _id: null, maxMath: 92, maxEnglish: 85, maxPhysics: 90 } ]
+
+
+use eventManagement; db.events.insertMany([{ "event_id": 1, "event_name": "Tech Conference", "date": new Date("2024-09-15"), "location": "New York", "attendees": 300 }, { "event_id": 2, "event_name": "Music Festival", "date": new Date("2024-10-05"), "location": "Los Angeles", "attendees": 500 }, { "event_id": 3, "event_name": "Art Exhibition", "date": new Date("2024-08-25"), "location": "San Francisco", "attendees": 150 }]);
+
+db.events.find({ "date": { $gt: new Date() } });
+
+db.events.aggregate([{ $group: { _id: "$location", eventCount: { $sum: 1 } } }]);
+
+
